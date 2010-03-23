@@ -6,41 +6,43 @@ use Getopt::Long;
 
 # options
 
-my $apport_init = 0;
 my $taux = 0.0375;
 my $somme = 200000;
-my $nb_mois = 50;
-my $epargne = 2000;
-GetOptions("somme=i"  => \$somme, "apport=i" =>\$apport_init,
-            "taux=f" => \$taux, "nb-mois=i" => \$nb_mois, "epargne=i" => \$epargne);
+my $epargne = 700;
+GetOptions("somme=i"  => \$somme, "taux=f" => \$taux, "epargne=i" => \$epargne);
 
 my $echeance = 1300;
-my $loyer = 700;
-
 my $interet = 0;
 my $remboursement = 0;
+my $epargne_total = 0;
+my $interet_total = 0;
+my $loyer_total = 0;
+my $mois = 0;
+my $mois_fin_avec_epargne = 0;
+my $interet_fin_avec_epargne = 0;
+my $somme_restante = $somme;
 
 
-my $nb = 0;
-for($nb = 0; $nb <= $nb_mois; $nb++) {
-    my $epargne_total = 0;
-    my $interet_total = 0;
-    my $loyer_total = 0;
-    my $somme_restante = $somme - $apport_init;
-    $somme_restante -= $epargne*$nb;
-    my $i = $nb;
-    $loyer_total    += $loyer*$nb;
-    while($somme_restante > 0 && $epargne_total < $somme_restante) {
-        $i++;
-        $epargne_total += ($epargne-$echeance);
-        $interet = $somme_restante * $taux/12;
-        $interet_total += $interet;
-        $remboursement = $echeance - $interet;
-        $somme_restante -= $remboursement;
+while($somme_restante > 0) {
+    $mois++;
+    # interet du mois
+    $interet = $somme_restante * $taux/12;
+    # interet total
+    $interet_total += $interet;
+    # remboursement du mois
+    $remboursement = $echeance - $interet;
+    # remboursement total
+    $somme_restante -= $remboursement;
+    # epargne
+    if ($epargne_total < $somme_restante) {
+        $epargne_total += $epargne;
+    } else {
+        $mois_fin_avec_epargne = $mois if $mois_fin_avec_epargne == 0;
+        $interet_fin_avec_epargne = $interet_total if  $interet_fin_avec_epargne == 0;
     }
-    my $lost = $interet_total + $loyer_total;
-    printf("$somme $nb $i %.2f\n", $lost);
 }
+
+printf("%d %d %.2f %d %.2f\n",$somme, $mois, $interet_total, $mois_fin_avec_epargne,  $interet_fin_avec_epargne);
 
 
 
